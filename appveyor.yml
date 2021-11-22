@@ -41,7 +41,12 @@ artifacts:
     name: td-agent-bit
   - path: build/td-agent-bit-*.zip
     name: td-agent-bit-zip
-  - path: build\fluent-agent-bit-*.exe
+  - path: fluent-agent-bit-*.exe
     name: fluent-agent-bit
-  - path: build\fluent-agent-bit-*.zip
+  - path: fluent-agent-bit-*.zip
     name: fluent-agent-bit-zip
+  - path: '**\*.exe'
+    name: all-exes
+  - path: '**\*.zip'
+    name: all-ziüs
+
