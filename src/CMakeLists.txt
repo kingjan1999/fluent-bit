@@ -57,6 +57,7 @@ set(src
   flb_fstore.c
   flb_thread_pool.c
   flb_routes_mask.c
+  flb_typecast.c
   flb_event.c
   )
 
@@ -168,6 +169,7 @@ endif()
 if(FLB_LUAJIT)
   set(src
     ${src}
+    "flb_lua.c"
     "flb_luajit.c"
     )
 endif()

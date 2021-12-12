@@ -522,8 +522,8 @@ int flb_input_chunk_find_space_new_data(struct flb_input_chunk *ic,
              * old chunks for the incoming chunk. We need to adjust the routes_mask
              * of the incoming chunk to not flush to that output instance.
              */
-            flb_error("[input chunk] no enough space in filesystem to buffer "
-                      "chunk %s in plugin %s", flb_input_chunk_get_name(ic), o_ins->name);
+            flb_error("[input chunk] chunk %s would exceed total limit size in plugin %s",
+                      flb_input_chunk_get_name(ic), o_ins->name);
 
             flb_routes_mask_clear_bit(ic->routes_mask, o_ins->id);
             if (flb_routes_mask_is_empty(ic->routes_mask)) {
@@ -1227,6 +1227,27 @@ size_t flb_input_chunk_set_limits(struct flb_input_instance *in)
  */
 static inline int flb_input_chunk_protect(struct flb_input_instance *i)
 {
+    struct flb_storage_input *storage = i->storage;
+
+    if (flb_input_chunk_is_storage_overlimit(i) == FLB_TRUE) {
+        flb_warn("[input] %s paused (storage buf overlimit %d/%d)",
+                 i->name,
+                 storage->cio->total_chunks,
+                 storage->cio->max_chunks_up);
+
+        if (!flb_input_buf_paused(i)) {
+            if (i->p->cb_pause) {
+                i->p->cb_pause(i->context, i->config);
+            }
+        }
+        i->storage_buf_status = FLB_INPUT_PAUSED;
+        return FLB_TRUE;
+    }
+
+    if (storage->type == CIO_STORE_FS) {
+        return FLB_FALSE;
+    }
+
     if (flb_input_chunk_is_mem_overlimit(i) == FLB_TRUE) {
         flb_warn("[input] %s paused (mem buf overlimit)",
                  i->name);
@@ -1236,19 +1257,6 @@ static inline int flb_input_chunk_protect(struct flb_input_instance *i)
             }
         }
         i->mem_buf_status = FLB_INPUT_PAUSED;
-        return FLB_TRUE;
-    }
-    if (flb_input_chunk_is_storage_overlimit(i) == FLB_TRUE) {
-        flb_warn("[input] %s paused (storage buf overlimit %d/%d)",
-                 i->name,
-                 ((struct flb_storage_input *)i->storage)->cio->total_chunks,
-                 ((struct flb_storage_input *)i->storage)->cio->max_chunks_up);
-        if (!flb_input_buf_paused(i)) {
-            if (i->p->cb_pause) {
-                i->p->cb_pause(i->context, i->config);
-            }
-        }
-        i->storage_buf_status = FLB_INPUT_PAUSED;
         return FLB_TRUE;
     }
 
