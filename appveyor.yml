@@ -45,8 +45,8 @@ artifacts:
     name: fluent-agent-bit
   - path: fluent-agent-bit-*.zip
     name: fluent-agent-bit-zip
-  - path: '**\*.exe'
+  - path: '**\fluent-bit-*.exe'
     name: all-exes
-  - path: '**\*.zip'
-    name: all-ziüs
+  - path: '**\fluent-bit-*.zip'
+    name: all-zips
 
